@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">CoroutineStartPractise</string>
+    <string name="city">City</string>
+    <string name="moscow">Moscow:</string>
+    <string name="temperature">Temperature:</string>
+    <string name="_5">-5</string>
+    <string name="button_download">Download</string>
 </resources>
