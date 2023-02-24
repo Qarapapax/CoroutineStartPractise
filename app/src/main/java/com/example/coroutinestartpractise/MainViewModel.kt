@@ -2,40 +2,31 @@ package com.example.coroutinestartpractise
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.*
 import kotlin.concurrent.thread
 
 class MainViewModel : ViewModel() {
 
-    private val parentJob = Job()
-    private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
-        Log.d("MainViewModel", "Exception caught: $throwable")
-    }
-    private val coroutineScope = CoroutineScope(Dispatchers.Main + parentJob + exceptionHandler)
-
-
     fun method() {
-        val childJob1 = coroutineScope.launch {
+        val job = viewModelScope.launch(Dispatchers.Default) {
+            Log.d("MainViewModel", "Started")
+            val before = System.currentTimeMillis()
+            var count = 0
+            for (i in 0..100_000_000) {
+                for (j in 0..100) {
+                    ensureActive()
+                    count++
+                }
+            }
+            Log.d("MainViewModel", "Finished ${System.currentTimeMillis() - before}")
+        }
+        job.invokeOnCompletion {
+            Log.d("MainViewModel", "Coroutine was cancelled. $it")
+        }
+        viewModelScope.launch {
             delay(3000)
-            Log.d("MainViewModel", "first coroutine finished")
+            job.cancel()
         }
-        val childJob2 = coroutineScope.launch {
-            delay(2000)
-            Log.d("MainViewModel", "second coroutine finished")
-        }
-        val childJob3 = coroutineScope.launch {
-            delay(1000)
-            error()
-            Log.d("MainViewModel", "third coroutine finished")
-        }
-    }
-
-    private fun error() {
-        throw RuntimeException()
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        coroutineScope.cancel()
     }
 }
